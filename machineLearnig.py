@@ -1,3 +1,7 @@
-import panda as pd
+import pandas as pd
 
-data = pd.
+data = pd.read_csv("db/crime.csv")
+
+print(data.head)
+
+
