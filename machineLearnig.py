@@ -1,3 +1,3 @@
-print("vai ter algo aqui")
+import panda as pd
 
-
+data = pd.
