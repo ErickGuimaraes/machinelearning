@@ -10,9 +10,6 @@ from IPython.display import display
 from tqdm import tqdm, tqdm_pandas
 import os.path
 
-def setOffenseWeigh(offense, crimesDict):
-    return crimesDict[offense]
-
 def treatData(data):
     print("Treating Data")
 
@@ -59,8 +56,8 @@ def main():
         fileExist =True
         filePath="db/crime-treated.csv"  
         names =["HOUR_REPORTED","DAY_REPORTED","WEEKDAY_REPORTED","MONTH_REPORTED","YEAR_REPORTED",
-                "OFFENSE_CATEGORY_ID"]
-        data=pd.read_csv(filePath, parse_dates=True,usecols=names)
+                "OFFENSE_CATEGORY_ID","NEIGHBORHOOD_ID"]
+        data=pd.read_csv(filePath, parse_dates=True,usecols=names,nrows = None)
     else:
         data=pd.read_csv(filePath, parse_dates=True)
 
@@ -93,7 +90,6 @@ def main():
     tqdm.pandas()
     print("Calculating Offense Weigh...")
     data['OFFENSE_WEIGH'] = data.progress_apply(lambda row:  crimesDict[row.OFFENSE_CATEGORY_ID], axis=1 )
-    temp =display(data.groupby([data.OFFENSE_CATEGORY_ID,data.OFFENSE_WEIGH]).size()) 
-    print(temp)
-    
+    dataClenad =data.groupby(['MONTH_REPORTED','WEEKDAY_REPORTED','NEIGHBORHOOD_ID'], as_index=False)['OFFENSE_WEIGH'].sum()
+    print(dataClenad)
 main()
