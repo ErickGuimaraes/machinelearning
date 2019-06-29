@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import csv
 import random
 import math
@@ -96,3 +97,12 @@ def main():
 
 
 main()
+=======
+import pandas as pd
+
+data = pd.read_csv("db/crime.csv")
+
+print(data.head)
+
+
+>>>>>>> 6e97d703bf66401691c54c98744efb1aa33115bd
