@@ -9,9 +9,12 @@ from scipy import stats
 from IPython.display import display
 from tqdm import tqdm, tqdm_pandas
 import os.path
+
+def setOffenseWeigh(offense, crimesDict):
+    return crimesDict[offense]
+
 def treatData(data):
     print("Treating Data")
-
 
     print("Filtering For Crimes:")
     data=data[data['IS_CRIME']==1]
@@ -64,14 +67,6 @@ def main():
     print("======================================================================DATA INFO======================================")
     data.info()
     print("===================================DATA INFO======================================")
-
-    print("===============ID==================")
-    datagrouped = data.groupby(["OFFENSE_CATEGORY_ID"]).groups.keys()
-
-
-    print(datagrouped)
-
-
     if(not fileExist):
         print(data.head(5))
         display(data.groupby([data.OFFENSE_CODE,data.OFFENSE_CODE_EXTENSION,data.OFFENSE_TYPE_ID]).size())
@@ -79,8 +74,26 @@ def main():
         print(temp)
 
         treatData(data)
-    exit(0)
-
+    crimesDict = {
+        'all-other-crimes': 3,
+        'larceny' : 4,
+        'theft-from-motor-vehicle' : 12,
+        'drug-alcohol' : 7,
+        'auto-theft' : 10,
+        'white-collar-crime': 2,
+        'burglary': 6,
+        'public-disorder' : 5,
+        'aggravated-assault': 13,
+        'other-crimes-against-persons' : 9,
+        'robbery' : 11,
+        'sexual-assault' : 14,
+        'murder': 15,
+        'arson': 8
+    }
+    tqdm.pandas()
+    print("Calculating Offense Weigh...")
+    data['OFFENSE_WEIGH'] = data.progress_apply(lambda row:  crimesDict[row.OFFENSE_CATEGORY_ID], axis=1 )
+    temp =display(data.groupby([data.OFFENSE_CATEGORY_ID,data.OFFENSE_WEIGH]).size()) 
+    print(temp)
     
-
 main()
