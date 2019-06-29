@@ -68,6 +68,16 @@ def main():
     if(not fileExist):
         treatData(data)
     exit(0)
-    
+
+
+    crimes = []
+    def numeriza(palavra,vetor):
+        if palavra not in vetor:
+            vetor.append(palavra)
+            return len(vetor)
+        else:
+            return vetor.index(palavra)
+
+    data["OFFENSE TYPE"] = numeriza(data["OFFENSE_TYPE"],crimes)
 
 main()
