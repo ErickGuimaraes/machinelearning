@@ -35,7 +35,7 @@ def handle_non_numeric(df):
 def main():
 
     names = ["OFFENSE_CODE", "REPORTED_DATE",
-         "DISTRICT_ID", "IS_CRIME" ]
+            "DISTRICT_ID", "IS_CRIME" ]
 
 
     data=pd.read_csv('crime.csv', parse_dates=True,usecols=names,nrows = 100)

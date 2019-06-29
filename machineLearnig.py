@@ -47,37 +47,31 @@ def treatData(data):
     
 def main():
     print("Loading Data...")
-    names = ["INCIDENT_ID", "OFFENSE_ID", "OFFENSE_CODE", "OFFENSE_CODE_EXTENSION",
-            "OFFENSE_TYPE_ID", "OFFENSE_CATEGORY_ID", "FIRST_OCCURRENCE_DATE",
+    names = ["OFFENSE_TYPE_ID", "OFFENSE_CATEGORY_ID", "FIRST_OCCURRENCE_DATE",
             "REPORTED_DATE", "DISTRICT_ID", "PRECINCT_ID",
             "NEIGHBORHOOD_ID", "IS_CRIME", "IS_TRAFFIC"]
     filePath="db/crime.csv"
     fileExist=False
     if(os.path.exists('db/crime-treated.csv')):
         fileExist =True
-        filePath="db/crime-treated.csv"    
-
-    data=pd.read_csv(filePath, parse_dates=True)
-    print("===================================DATA INFO======================================")
+        filePath="db/crime-treated.csv"  
+        names =["HOUR_REPORTED","DAY_REPORTED","WEEKDAY_REPORTED","MONTH_REPORTED","YEAR_REPORTED",
+                "OFFENSE_CATEGORY_ID"]
+        data=pd.read_csv(filePath, parse_dates=True,usecols=names)
+    else:
+        data=pd.read_csv(filePath, parse_dates=True)
+    print("======================================================================DATA INFO======================================")
     data.info()
     print("===================================DATA INFO======================================")
-    print(data.head(5))
-    #display(data.groupby([data.OFFENSE_CODE,data.OFFENSE_CODE_EXTENSION,data.OFFENSE_TYPE_ID]).size())
-    temp=display(data.groupby([data.INCIDENT_ID,data.OFFENSE_CODE,data.OFFENSE_CODE_EXTENSION,data.OFFENSE_TYPE_ID]).size())
-    print(temp)
     if(not fileExist):
+        print(data.head(5))
+        display(data.groupby([data.OFFENSE_CODE,data.OFFENSE_CODE_EXTENSION,data.OFFENSE_TYPE_ID]).size())
+        temp=display(data.groupby([data.INCIDENT_ID,data.OFFENSE_CODE,data.OFFENSE_CODE_EXTENSION,data.OFFENSE_TYPE_ID]).size())
+        print(temp)
+
         treatData(data)
     exit(0)
 
-
-    crimes = []
-    def numeriza(palavra,vetor):
-        if palavra not in vetor:
-            vetor.append(palavra)
-            return len(vetor)
-        else:
-            return vetor.index(palavra)
-
-    data["OFFENSE TYPE"] = numeriza(data["OFFENSE_TYPE"],crimes)
+    
 
 main()
