@@ -60,9 +60,18 @@ def main():
         data=pd.read_csv(filePath, parse_dates=True,usecols=names)
     else:
         data=pd.read_csv(filePath, parse_dates=True)
+
     print("======================================================================DATA INFO======================================")
     data.info()
     print("===================================DATA INFO======================================")
+
+    print("===============ID==================")
+    datagrouped = data.groupby(["OFFENSE_CATEGORY_ID"]).groups.keys()
+
+
+    print(datagrouped)
+
+
     if(not fileExist):
         print(data.head(5))
         display(data.groupby([data.OFFENSE_CODE,data.OFFENSE_CODE_EXTENSION,data.OFFENSE_TYPE_ID]).size())
