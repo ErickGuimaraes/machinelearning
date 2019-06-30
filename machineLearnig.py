@@ -129,13 +129,17 @@ def main():
     tqdm.pandas()
     print("Calculating Offense Weigh...")
     data['OFFENSE_WEIGH'] = data.progress_apply(lambda row:  crimesDict[row.OFFENSE_CATEGORY_ID], axis=1 )
+    dataCount = data.groupby(['MONTH_REPORTED','WEEKDAY_REPORTED','HOUR_REPORTED','NEIGHBORHOOD_ID']).MONTH_REPORTED.agg('count').to_frame('COUNT').reset_index()
     dataClenad =data.groupby(['MONTH_REPORTED','WEEKDAY_REPORTED','HOUR_REPORTED','NEIGHBORHOOD_ID'], as_index=False).agg({'OFFENSE_WEIGH':'sum'})#['OFFENSE_WEIGH'].sum()['GEO_X'].mean()
+    dataClenad['COUNT'] = dataCount['COUNT']
     print(dataClenad)
     print("Calculating Safety ...")
     medianCrime = dataClenad['OFFENSE_WEIGH'].median()
     modeCrime = dataClenad['OFFENSE_WEIGH'].mode().values
+    modeQtd = dataClenad['COUNT'].mode().values
+
     print(modeCrime)
-    dataClenad['SAFETY'] = dataClenad.progress_apply(lambda row: 1 if row.OFFENSE_WEIGH <= modeCrime else 0, axis=1 )
+    dataClenad['SAFETY'] = dataClenad.progress_apply(lambda row: 1 if row.OFFENSE_WEIGH <= modeCrime and row.HOUR_REPORTED <= 18 and row.HOUR_REPORTED >= 8 and row.COUNT <= modeQtd else 0, axis=1 )
 
 
     ExecuteKNN(dataClenad)
