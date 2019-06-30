@@ -17,6 +17,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, confusion_matrix  
 from sklearn.model_selection import cross_val_score
 from sklearn.metrics import accuracy_score
+from sklearn.linear_model import LogisticRegression
 
 
 def ExecuteKNN(data):
@@ -26,7 +27,7 @@ def ExecuteKNN(data):
     data['OFFENSE_WEIGH'] = data.progress_apply(lambda row: row.OFFENSE_WEIGH/100,axis=1 )
 
     print(data)
-    x_columns=['MONTH_REPORTED','WEEKDAY_REPORTED','HOUR_REPORTED','NEIGHBORHOOD_ID','OFFENSE_WEIGH']
+    x_columns=['MONTH_REPORTED','WEEKDAY_REPORTED','HOUR_REPORTED','NEIGHBORHOOD_ID','OFFENSE_WEIGH','COUNT']
     y_columns=['SAFETY']
 
     x_train, x_test = train_test_split(data[x_columns], test_size=0.3)
@@ -47,6 +48,32 @@ def ExecuteKNN(data):
     print(cross_val)
     accuracy_value = accuracy_score(y_test, predictions)
     print(accuracy_value)
+
+
+
+
+def ExecuteDecisionTree(data):
+    print("Starting Decision Tree...")
+    le = LabelEncoder()
+    data = data.progress_apply(le.fit_transform)
+    data['OFFENSE_WEIGH'] = data.progress_apply(lambda row: row.OFFENSE_WEIGH / 100, axis=1)
+    x_columns = ['MONTH_REPORTED', 'WEEKDAY_REPORTED', 'HOUR_REPORTED', 'NEIGHBORHOOD_ID', 'OFFENSE_WEIGH', 'COUNT']
+    y_columns = ['SAFETY']
+
+    x_train, x_test = train_test_split(data[x_columns], test_size=0.3)
+    y_train, y_test = train_test_split(data[y_columns], test_size=0.3)
+
+    model = LogisticRegression()
+    model.fit(x_train, y_train)
+    predictions = model.predict(x_test)
+    print(confusion_matrix(y_test, predictions))
+    print(classification_report(y_test, predictions))
+    cross_val = cross_val_score(model, data[x_columns], data[y_columns].values.ravel(), cv=4,
+                                scoring='neg_mean_squared_error')
+    print(cross_val)
+    accuracy_value = accuracy_score(y_test, predictions)
+    print(accuracy_value)
+
 
 def treatData(data):
     print("Treating Data")
@@ -143,5 +170,6 @@ def main():
 
 
     ExecuteKNN(dataClenad)
+    ExecuteDecisionTree(dataClenad)
 
 main()
