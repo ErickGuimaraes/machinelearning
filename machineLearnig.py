@@ -9,6 +9,44 @@ from scipy import stats
 from IPython.display import display
 from tqdm import tqdm, tqdm_pandas
 import os.path
+import sklearn
+from sklearn import preprocessing
+from sklearn.preprocessing import LabelEncoder
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report, confusion_matrix  
+from sklearn.model_selection import cross_val_score
+from sklearn.metrics import accuracy_score
+
+
+def ExecuteKNN(data):
+    print("Starting KNN...")
+    le = LabelEncoder()
+    data = data.progress_apply(le.fit_transform)
+    data['OFFENSE_WEIGH'] = data.progress_apply(lambda row: row.OFFENSE_WEIGH/100,axis=1 )
+
+    print(data)
+    x_columns=['MONTH_REPORTED','WEEKDAY_REPORTED','HOUR_REPORTED','NEIGHBORHOOD_ID','OFFENSE_WEIGH']
+    y_columns=['SAFETY']
+
+    x_train, x_test = train_test_split(data[x_columns], test_size=0.3)
+    y_train, y_test = train_test_split(data[y_columns], test_size=0.3)
+    print(data[x_columns])
+    
+    model = KNeighborsClassifier(n_neighbors=4)
+    model.fit(x_train, y_train.values.ravel())
+    predictions = model.predict(x_test)
+    print(len(predictions))
+    print(len(y_test))
+    # Get the actual values for the test set.
+    actual = y_test
+    # Compute the mean squared error of our predictions.
+    print(confusion_matrix(y_test, predictions))  
+    print(classification_report(y_test, predictions))  
+    cross_val = cross_val_score(model, data[x_columns],data[y_columns].values.ravel(), cv=4,scoring='neg_mean_squared_error')
+    print(cross_val)
+    accuracy_value = accuracy_score(y_test, predictions)
+    print(accuracy_value)
 
 def treatData(data):
     print("Treating Data")
@@ -51,6 +89,7 @@ def main():
             "REPORTED_DATE", "DISTRICT_ID", "PRECINCT_ID",
             "NEIGHBORHOOD_ID", "IS_CRIME", "IS_TRAFFIC"]
     filePath="db/crime.csv"
+    pd.set_option('display.float_format', '{:.2f}'.format)
     fileExist=False
     if(os.path.exists('db/crime-treated.csv')):
         fileExist =True
@@ -90,6 +129,15 @@ def main():
     tqdm.pandas()
     print("Calculating Offense Weigh...")
     data['OFFENSE_WEIGH'] = data.progress_apply(lambda row:  crimesDict[row.OFFENSE_CATEGORY_ID], axis=1 )
-    dataClenad =data.groupby(['MONTH_REPORTED','WEEKDAY_REPORTED','NEIGHBORHOOD_ID'], as_index=False)['OFFENSE_WEIGH'].sum()
+    dataClenad =data.groupby(['MONTH_REPORTED','WEEKDAY_REPORTED','HOUR_REPORTED','NEIGHBORHOOD_ID'], as_index=False).agg({'OFFENSE_WEIGH':'sum'})#['OFFENSE_WEIGH'].sum()['GEO_X'].mean()
     print(dataClenad)
+    print("Calculating Safety ...")
+    medianCrime = dataClenad['OFFENSE_WEIGH'].median()
+    modeCrime = dataClenad['OFFENSE_WEIGH'].mode().values
+    print(modeCrime)
+    dataClenad['SAFETY'] = dataClenad.progress_apply(lambda row: 1 if row.OFFENSE_WEIGH <= modeCrime else 0, axis=1 )
+
+
+    ExecuteKNN(dataClenad)
+
 main()
