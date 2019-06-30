@@ -21,6 +21,42 @@ from sklearn.metrics import accuracy_score
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 
+def TesteManual(yTest,yPrediction):
+    total = len(yTest)
+    right =0
+    wrong = 0
+    zeroPred =0
+    onePred =0
+    zeroTest =0
+    oneTest =0
+    y_test_mat=yTest.values.ravel()
+    print(y_test_mat)
+    print(yPrediction)
+    for i in range(total):
+        if(y_test_mat[i]==yPrediction[i]):
+            right+=1
+        else:
+            wrong +=1
+        if yPrediction[i] ==0:
+            zeroPred+=1
+        else:
+            onePred+=1
+        if y_test_mat[i] ==0:
+            zeroTest+=1
+        else:
+            oneTest+=1
+    print("right ->", right)
+    print("porcent of total->", right/total)
+    print("=====================")
+    print("wrong ->", wrong)
+    print("porcent of wrong->", wrong/total)
+    print("=====================")
+    print("oneTest ->", oneTest)
+    print("onePred ->",onePred)
+    print("=====================")
+    print("zeroTest ->", zeroTest)
+    print("zeroPred ->", zeroPred)
+
 
 def ExecuteKNN(data):
     print("Starting KNN...")
@@ -55,10 +91,7 @@ def ExecuteKNN(data):
 
     accuracy_value = accuracy_score(y_test, predictions)
     print(accuracy_value)
-
-
-
-
+    TesteManual(y_test,predictions)
 def ExecuteDecisionTree(data):
     print("Starting Decision Tree...")
     le = LabelEncoder()
@@ -85,7 +118,7 @@ def ExecuteDecisionTree(data):
     print('\n')
     print("=== Mean AUC Score ===")
     print("Mean AUC Score - Random Forest: ", rfc_cv_score.mean())
-
+    TesteManual(y_test,predictions)
 def ExecuteRandomForest(data):
     print("Starting Random Forest...")
     le = LabelEncoder()
@@ -118,6 +151,7 @@ def ExecuteRandomForest(data):
     print('\n')
     print("=== Mean AUC Score ===")
     print("Mean AUC Score - Random Forest: ", rfc_cv_score.mean())
+    TesteManual(y_test,rfc_predict)
 
 def treatData(data):
     print("Treating Data")
@@ -210,7 +244,7 @@ def main():
     modeQtd = dataClenad['COUNT'].mode().values
 
     print(modeCrime)
-    dataClenad['SAFETY'] = dataClenad.progress_apply(lambda row: 1 if row.OFFENSE_WEIGH <= modeCrime and row.HOUR_REPORTED <= 18 and row.HOUR_REPORTED >= 8 and row.COUNT <= modeQtd else 0, axis=1 )
+    dataClenad['SAFETY'] = dataClenad.progress_apply(lambda row: 1 if row.OFFENSE_WEIGH <= modeCrime else 0, axis=1 )
 
 
     ExecuteKNN(dataClenad)
