@@ -17,7 +17,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, confusion_matrix  
 from sklearn.model_selection import cross_val_score
 from sklearn.metrics import accuracy_score
-from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
 
 
 def ExecuteKNN(data):
@@ -63,17 +64,54 @@ def ExecuteDecisionTree(data):
     x_train, x_test = train_test_split(data[x_columns], test_size=0.3)
     y_train, y_test = train_test_split(data[y_columns], test_size=0.3)
 
-    model = LogisticRegression()
-    model.fit(x_train, y_train)
+    model = DecisionTreeClassifier()
+    model.fit(x_train, np.ravel(y_train,order='C'))
     predictions = model.predict(x_test)
+    rfc_cv_score = cross_val_score(model, x_train, y_train, cv=10, scoring='roc_auc')
+    print("=== Confusion Matrix ===")
     print(confusion_matrix(y_test, predictions))
+    print('\n')
+    print("=== Classification Report ===")
     print(classification_report(y_test, predictions))
-    cross_val = cross_val_score(model, data[x_columns], data[y_columns].values.ravel(), cv=4,
-                                scoring='neg_mean_squared_error')
-    print(cross_val)
-    accuracy_value = accuracy_score(y_test, predictions)
-    print(accuracy_value)
+    print('\n')
+    print("=== All AUC Scores ===")
+    print(rfc_cv_score)
+    print('\n')
+    print("=== Mean AUC Score ===")
+    print("Mean AUC Score - Random Forest: ", rfc_cv_score.mean())
 
+def ExecuteRandomForest(data):
+    print("Starting Random Forest...")
+    le = LabelEncoder()
+    data = data.progress_apply(le.fit_transform)
+    data['OFFENSE_WEIGH'] = data.progress_apply(lambda row: row.OFFENSE_WEIGH / 100, axis=1)
+    x_columns = ['MONTH_REPORTED', 'WEEKDAY_REPORTED', 'HOUR_REPORTED', 'NEIGHBORHOOD_ID', 'OFFENSE_WEIGH', 'COUNT']
+    y_columns = ['SAFETY']
+
+    x_train, x_test = train_test_split(data[x_columns], test_size=0.3)
+    y_train, y_test = train_test_split(data[y_columns], test_size=0.3)
+
+    from sklearn import model_selection
+    # random forest model creation
+    rfc = RandomForestClassifier()
+    rfc.fit(x_train, y_train)
+    # predictions
+    rfc_predict = rfc.predict(x_test)
+
+    from sklearn.model_selection import cross_val_score
+    from sklearn.metrics import classification_report, confusion_matrix
+    rfc_cv_score = cross_val_score(rfc, x_train, y_train, cv=10, scoring='roc_auc')
+    print("=== Confusion Matrix ===")
+    print(confusion_matrix(y_test, rfc_predict))
+    print('\n')
+    print("=== Classification Report ===")
+    print(classification_report(y_test, rfc_predict))
+    print('\n')
+    print("=== All AUC Scores ===")
+    print(rfc_cv_score)
+    print('\n')
+    print("=== Mean AUC Score ===")
+    print("Mean AUC Score - Random Forest: ", rfc_cv_score.mean())
 
 def treatData(data):
     print("Treating Data")
@@ -169,7 +207,8 @@ def main():
     dataClenad['SAFETY'] = dataClenad.progress_apply(lambda row: 1 if row.OFFENSE_WEIGH <= modeCrime and row.HOUR_REPORTED <= 18 and row.HOUR_REPORTED >= 8 and row.COUNT <= modeQtd else 0, axis=1 )
 
 
-    ExecuteKNN(dataClenad)
+    #ExecuteKNN(dataClenad)
     ExecuteDecisionTree(dataClenad)
+    ExecuteRandomForest(dataClenad)
 
 main()
