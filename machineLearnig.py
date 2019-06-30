@@ -14,7 +14,8 @@ from sklearn import preprocessing
 from sklearn.preprocessing import LabelEncoder
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report, confusion_matrix  
+from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.metrics import precision_score, f1_score
 from sklearn.model_selection import cross_val_score
 from sklearn.metrics import accuracy_score
 from sklearn.tree import DecisionTreeClassifier
@@ -46,8 +47,8 @@ def ExecuteKNN(data):
     print(confusion_matrix(y_test, predictions))  
     print(classification_report(y_test, predictions))
 
-
-    cross_val = cross_val_score(model,data.drop(columns=['SAFETY']), data['SAFETY'].values.ravel(), cv=300)
+    print("__________________________________ CROSSSSSSSSSSS VALLLLLLLLLLLL ________________________________")
+    cross_val = cross_val_score(model,data.drop(columns=['SAFETY']), data['SAFETY'].values.ravel(), cv=5)
 
     print("__________________________________ CROSSSSSSSSSSS VALLLLLLLLLLLL ________________________________")
     print("rabo {}".format(np.mean(cross_val)))
@@ -67,12 +68,12 @@ def ExecuteDecisionTree(data):
     y_columns = ['SAFETY']
 
     x_train, x_test = train_test_split(data[x_columns], test_size=0.3)
-    y_train, y_test = train_test_split(data[y_columns], test_size=0.3)
+    y_train, y_test = train_test_split(data[y_columns].values.ravel(), test_size=0.3)
 
     model = DecisionTreeClassifier()
     model.fit(x_train, np.ravel(y_train,order='C'))
     predictions = model.predict(x_test)
-    rfc_cv_score = cross_val_score(model, x_train, y_train, cv=10, scoring='roc_auc')
+    rfc_cv_score = cross_val_score(model,data.drop(columns=['SAFETY']), y_train, cv=5)
     print("=== Confusion Matrix ===")
     print(confusion_matrix(y_test, predictions))
     print('\n')
@@ -94,7 +95,7 @@ def ExecuteRandomForest(data):
     y_columns = ['SAFETY']
 
     x_train, x_test = train_test_split(data[x_columns], test_size=0.3)
-    y_train, y_test = train_test_split(data[y_columns], test_size=0.3)
+    y_train, y_test = train_test_split(data[y_columns].values.ravel(), test_size=0.3)
 
     from sklearn import model_selection
     # random forest model creation
@@ -105,7 +106,7 @@ def ExecuteRandomForest(data):
 
     from sklearn.model_selection import cross_val_score
     from sklearn.metrics import classification_report, confusion_matrix
-    rfc_cv_score = cross_val_score(rfc, x_train, y_train, cv=10, scoring='roc_auc')
+    rfc_cv_score = cross_val_score(rfc,data.drop(columns=['SAFETY']), y_train, cv=5)
     print("=== Confusion Matrix ===")
     print(confusion_matrix(y_test, rfc_predict))
     print('\n')
@@ -212,7 +213,7 @@ def main():
     dataClenad['SAFETY'] = dataClenad.progress_apply(lambda row: 1 if row.OFFENSE_WEIGH <= modeCrime and row.HOUR_REPORTED <= 18 and row.HOUR_REPORTED >= 8 and row.COUNT <= modeQtd else 0, axis=1 )
 
 
-    #ExecuteKNN(dataClenad)
+    ExecuteKNN(dataClenad)
     ExecuteDecisionTree(dataClenad)
     ExecuteRandomForest(dataClenad)
 
