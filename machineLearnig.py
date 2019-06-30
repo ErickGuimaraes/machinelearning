@@ -47,17 +47,17 @@ def ExecuteKNN(data):
     print(confusion_matrix(y_test, predictions))  
     print(classification_report(y_test, predictions))
 
-    print("__________________________________ CROSSSSSSSSSSS VALLLLLLLLLLLL ________________________________")
-    cross_val = cross_val_score(model,data.drop(columns=['SAFETY']), data['SAFETY'].values.ravel(), cv=5)
+
 
     print("__________________________________ CROSSSSSSSSSSS VALLLLLLLLLLLL ________________________________")
-    print("rabo {}".format(np.mean(cross_val)))
+    cross_val = cross_val_score(model,x_train,y_train.values.ravel(), cv=5)
+    print("{}".format(np.mean(cross_val)))
+
+    print("__________________________________ CROSSSSSSSSSSS VALLLLLLLLLLLL ________________________________")
+
 
     accuracy_value = accuracy_score(y_test, predictions)
     print(accuracy_value)
-
-
-
 
 def ExecuteDecisionTree(data):
     print("Starting Decision Tree...")
@@ -73,7 +73,7 @@ def ExecuteDecisionTree(data):
     model = DecisionTreeClassifier()
     model.fit(x_train, np.ravel(y_train,order='C'))
     predictions = model.predict(x_test)
-    rfc_cv_score = cross_val_score(model,data.drop(columns=['SAFETY']), y_train, cv=5)
+    rfc_cv_score = cross_val_score(model,x_train,y_train, cv=5)
     print("=== Confusion Matrix ===")
     print(confusion_matrix(y_test, predictions))
     print('\n')
@@ -106,7 +106,7 @@ def ExecuteRandomForest(data):
 
     from sklearn.model_selection import cross_val_score
     from sklearn.metrics import classification_report, confusion_matrix
-    rfc_cv_score = cross_val_score(rfc,data.drop(columns=['SAFETY']), y_train, cv=5)
+    rfc_cv_score = cross_val_score(rfc,x_train,y_train, cv=5)
     print("=== Confusion Matrix ===")
     print(confusion_matrix(y_test, rfc_predict))
     print('\n')
