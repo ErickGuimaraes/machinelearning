@@ -43,9 +43,14 @@ def ExecuteKNN(data):
     actual = y_test
     # Compute the mean squared error of our predictions.
     print(confusion_matrix(y_test, predictions))  
-    print(classification_report(y_test, predictions))  
-    cross_val = cross_val_score(model, data[x_columns],data[y_columns].values.ravel(), cv=4,scoring='neg_mean_squared_error')
-    print(cross_val)
+    print(classification_report(y_test, predictions))
+
+
+    cross_val = cross_val_score(model,data.drop(columns=['SAFETY']), data['SAFETY'].values.ravel(), cv=300)
+
+    print("__________________________________ CROSSSSSSSSSSS VALLLLLLLLLLLL ________________________________")
+    print("rabo {}".format(np.mean(cross_val)))
+
     accuracy_value = accuracy_score(y_test, predictions)
     print(accuracy_value)
 
