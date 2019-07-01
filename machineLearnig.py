@@ -149,18 +149,24 @@ def vote(predictions):
         for j in range(len(predictions)):
             if(i==j):
                 continue
-            print("compating:"+str(i)+" <--> "+str(j))
             if(equal(predictions[i],predictions[j])):
                 votes[i]+=1
-    return predictions[votes.index(max(votes))]
+    return predictions[votes.index(max(votes))] ,votes.index(max(votes))
 
 def bootstrap_sample(original_dataset, m):
-    sub_dataset = []
+    x_columns = ['MONTH_REPORTED', 'WEEKDAY_REPORTED', 'HOUR_REPORTED', 'NEIGHBORHOOD_ID', 'OFFENSE_WEIGH', 'COUNT']
+    y_columns = ['SAFETY']
+    sub_dataset_x = []
+    sub_dataset_y = []
     for i in range(m):
-        sub_dataset.append(
-            original_dataset.iloc[random.randint(0,len(original_dataset)),:]
+        nrand =random.randint(0,len(original_dataset))
+        sub_dataset_x.append(
+            original_dataset[x_columns].iloc[nrand,:]
         )
-    return sub_dataset
+        sub_dataset_y.append(
+            original_dataset[y_columns].iloc[nrand,:]
+        )
+    return sub_dataset_x,sub_dataset_y
 
 def voting(lista):
     return lista[0]
@@ -168,12 +174,23 @@ def voting(lista):
 def bagging( n, m, base_algorithm, train_dataset, target, test_dataset):
 
     predictions = [[0 for x in range(len(target))] for y in range(n)]
+    y_test_vect = [[0 for x in range(len(target))] for y in range(n)]
     for i in range(n):
-        sub_dataset = bootstrap_sample(train_dataset, m)
-        predictions[i] = base_algorithm.fit(train_dataset, target).predict(test_dataset)
+        sub_dataset_x,sub_dataset_y = bootstrap_sample(train_dataset, m)
+        x_train,x_test,y_train, y_test = train_test_split(sub_dataset_x,sub_dataset_y)
+        model = base_algorithm
 
-    final_predictions = vote(predictions) # for classification
-
+        model.fit(x_train,y_train)
+        y_test_vect[i]=y_test
+        predictions[i] =model.predict(x_test)
+        print(len(predictions[i]))
+        accuracy_value = accuracy_score(y_test, predictions[i])
+        print(accuracy_value)
+    print(len(predictions))
+    final_predictions,ind = vote(predictions) # for classification
+    accuracy_value = accuracy_score(y_test_vect[ind], final_predictions)
+    print("accuracy_value Final -->",accuracy_value)
+    
     return final_predictions
 
 # Bootstrap Aggregation Algorithm
@@ -326,18 +343,16 @@ def main():
     print(counts)
     #ExecuteKNN(dataClenad)
     #ExecuteDecisionTree(dataClenad)
-    #le = LabelEncoder()
-    #dataClenad = dataClenad.progress_apply(le.fit_transform)
-    #x_columns = ['MONTH_REPORTED', 'WEEKDAY_REPORTED', 'HOUR_REPORTED', 'NEIGHBORHOOD_ID', 'OFFENSE_WEIGH', 'COUNT']
-    #y_columns = ['SAFETY']
-    CratGraph(dataClenad)
-    #x_train, x_test = train_test_split(dataClenad[x_columns], test_size=0.3)
-    #y_train, y_test = train_test_split(dataClenad[y_columns].values.ravel(), test_size=0.3)
-    #Dec = DecisionTreeClassifier()
-    #predictions = bagging(5, len(y_test), Dec, x_train, np.ravel(y_train, order='C'), x_train)
-    #print(predictions)
-    #print(y_test)
-    #accuracy_value = accuracy_score(y_test, predictions)
+    #CratGraph(dataClenad)
+    le = LabelEncoder()
+    dataClenad = dataClenad.progress_apply(le.fit_transform)
+    x_columns = ['MONTH_REPORTED', 'WEEKDAY_REPORTED', 'HOUR_REPORTED', 'NEIGHBORHOOD_ID', 'OFFENSE_WEIGH', 'COUNT']
+    y_columns = ['SAFETY']
+    x_train, x_test = train_test_split(dataClenad[x_columns], test_size=0.3)
+    y_train, y_test = train_test_split(dataClenad[y_columns].values.ravel(), test_size=0.3)
+    Dec = DecisionTreeClassifier()
+    predictions = bagging(5, 100, Dec, dataClenad, np.ravel(y_train, order='C'), x_train)
+    exit(0)
     # ExecuteRandomForest(dataClenad)
     #ExecuteRandomForest(dataClenad)
 
