@@ -169,7 +169,12 @@ def bagging( n, m, base_algorithm, train_dataset, target, test_dataset):
     predictions = [[0 for x in range(len(target))] for y in range(n)]
     for i in range(n):
         sub_dataset = bootstrap_sample(train_dataset, m)
-        predictions[i] = base_algorithm.fit(train_dataset, target).predict(test_dataset)
+        x_train,x_test = train_test_split(sub_dataset)
+        y_train, y_test = train_test_split(sub_dataset)
+        model = base_algorithm
+        model.fit(x_train,y_train)
+
+        predictions[i] =model.predict(x_test)
 
     final_predictions = vote(predictions) # for classification
 
@@ -329,10 +334,11 @@ def main():
     x_train, x_test = train_test_split(dataClenad[x_columns], test_size=0.3)
     y_train, y_test = train_test_split(dataClenad[y_columns].values.ravel(), test_size=0.3)
     Dec = DecisionTreeClassifier()
-    predictions = bagging(5, len(y_test), Dec, x_train, np.ravel(y_train, order='C'), x_train)
+    predictions = bagging(5, 500, Dec, x_train, np.ravel(y_train, order='C'), x_train)
     print(predictions)
     print(y_test)
     accuracy_value = accuracy_score(y_test, predictions)
+    print(accuracy_value)
     # ExecuteRandomForest(dataClenad)
     #ExecuteRandomForest(dataClenad)
 
