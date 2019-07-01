@@ -62,25 +62,25 @@ def TesteManual(yTest,yPrediction):
     print("zeroPred ->", zeroPred)
 
 
-def ExecuteKNN(data):
+def ExecuteKNN(data,cvTeste=10):
     print("Starting KNN...")
     le = LabelEncoder()
     data = data.progress_apply(le.fit_transform)
     #data['OFFENSE_WEIGH'] = data.progress_apply(lambda row: row.OFFENSE_WEIGH/100,axis=1 )
 
-    print(data)
+    #print(data)
     x_columns=['MONTH_REPORTED','WEEKDAY_REPORTED','HOUR_REPORTED','NEIGHBORHOOD_ID','OFFENSE_WEIGH','COUNT']
     y_columns=['SAFETY']
 
     x_train, x_test = train_test_split(data[x_columns], test_size=0.3)
     y_train, y_test = train_test_split(data[y_columns], test_size=0.3)
-    print(data[x_columns])
+    #print(data[x_columns])
     
     model = KNeighborsClassifier(n_neighbors=4)
     model.fit(x_train, y_train.values.ravel())
     predictions = model.predict(x_test)
-    print(len(predictions))
-    print(len(y_test))
+    #print(len(predictions))
+    #print(len(y_test))
     # Get the actua__________________________________l values for the test set.
     actual = y_test
     # Compute the mean squared error of our predictions.
@@ -90,7 +90,7 @@ def ExecuteKNN(data):
 
 
     print("__________________________________ CROSSSSSSSSSSS VALLLLLLLLLLLL ________________________________")
-    cross_val = cross_val_score(model,data[x_columns],data[y_columns].values.ravel(), cv=10)
+    cross_val = cross_val_score(model,data[x_columns],data[y_columns].values.ravel(), cv=cvTeste)
     print("{}".format(np.mean(cross_val)))
 
     print("__________________________________ CROSSSSSSSSSSS VALLLLLLLLLLLL ________________________________")
@@ -99,6 +99,7 @@ def ExecuteKNN(data):
     accuracy_value = accuracy_score(y_test, predictions)
     print(accuracy_value)
     TesteManual(y_test,predictions)
+    return np.mean(cross_val)
 
 def ExecuteDecisionTree(data):
     print("Starting Decision Tree...")
@@ -134,7 +135,23 @@ def ExecuteDecisionTree(data):
     print("__________________________________ CROSSSSSSSSSSS VALLLLLLLLLLLL ________________________________")
 
     TesteManual(y_test,predictions)
-
+def equal(pre1,pre2):
+    if(len(pre1)!=len(pre2)):
+        return False
+    for i in range(len(pre1)):
+        if(pre1[i]!=pre2[i]):
+            return False
+    return True
+def vote(predictions):
+    votes=[0]*len(predictions)
+    for i in range(len(predictions)):
+        for j in range(len(predictions)):  
+            if(i==j):
+                continue
+            print("compating:"+str(i)+" <--> "+str(j))
+            if(equal(predictions[i],predictions[j])):
+                votes[i]+=1
+    return votes.index(max(votes))
 # Bootstrap Aggregation Algorithm
 def bagging(data,n):
     AlgLR=LogisticRegression(solver='lbfgs')
@@ -148,16 +165,15 @@ def bagging(data,n):
     x_columns = ['MONTH_REPORTED', 'WEEKDAY_REPORTED', 'HOUR_REPORTED', 'NEIGHBORHOOD_ID', 'OFFENSE_WEIGH', 'COUNT']
     y_columns = ['SAFETY']
     predictions = []
-
+    temp=[]
     for i in range(n):
-        array = []
         x_train, x_test,y_train, y_test = train_test_split(data[x_columns],data[y_columns] ,test_size=0.3, random_state=random.randint(1,100))
         indRand=random.randint(0,2)
-        array.append(algorithms[indRand].fit(x_train, y_train.values.ravel()).predict(x_test))
-        array.append(i)
-        predictions.append(array)
+        temp =algorithms[indRand].fit(x_train, y_train.values.ravel()).predict(x_test)
+        predictions.append(algorithms[indRand].fit(x_train, y_train.values.ravel()).predict(x_test))
     for i in range(len(predictions)):
         print(predictions[i])
+    print(vote(predictions))
 def ExecuteRandomForest(data):
     print("Starting Random Forest...")
     le = LabelEncoder()
@@ -235,6 +251,31 @@ def treatData(data):
     data.to_csv('db/crime-treated.csv',index=None)
     print("arquivos salvo")
     
+def CratGraph(data):
+    print("Creating graph...")
+    #file = open("graphs.csv","w")
+    #lines=[]
+    #lines.append("KNN")
+    #lines.append("N,ACCURACY")
+    N=[]
+    accurs=[]
+    for i in range(1,11):
+        print("runnig with n = ",i*10)
+        accur=ExecuteKNN(data,10*i)
+        N.append(i*10)
+        accurs.append(accur)
+    print("N")
+    print(N)
+    print("accurs")
+    print(accur)
+    gra=plt.plot(N,accurs)
+    plt.xlabel("N")
+    plt.ylabel("cross Validation")
+    plt.savefig("graph.png")
+        #lines.append(str(i*10)+","+str(accur))
+    #file.writelines(lines)
+    #file.close()
+
 def main():
     print("Loading Data...")
     names = ["OFFENSE_TYPE_ID", "OFFENSE_CATEGORY_ID", "FIRST_OCCURRENCE_DATE",
@@ -297,6 +338,7 @@ def main():
     print(counts)
     #ExecuteKNN(dataClenad)
     #ExecuteDecisionTree(dataClenad)
+    #CratGraph(dataClenad)
     bagging(dataClenad,5)
     #ExecuteRandomForest(dataClenad)
 
