@@ -75,7 +75,7 @@ def ExecuteKNN(data,cvTeste=10):
     x_train, x_test = train_test_split(data[x_columns], test_size=0.3)
     y_train, y_test = train_test_split(data[y_columns], test_size=0.3)
     #print(data[x_columns])
-    
+
     model = KNeighborsClassifier(n_neighbors=4)
     model.fit(x_train, y_train.values.ravel())
     predictions = model.predict(x_test)
@@ -84,7 +84,7 @@ def ExecuteKNN(data,cvTeste=10):
     # Get the actua__________________________________l values for the test set.
     actual = y_test
     # Compute the mean squared error of our predictions.
-    print(confusion_matrix(y_test, predictions))  
+    print(confusion_matrix(y_test, predictions))
     print(classification_report(y_test, predictions))
 
 
@@ -145,15 +145,38 @@ def equal(pre1,pre2):
 def vote(predictions):
     votes=[0]*len(predictions)
     for i in range(len(predictions)):
-        for j in range(len(predictions)):  
+        for j in range(len(predictions)):
             if(i==j):
                 continue
             print("compating:"+str(i)+" <--> "+str(j))
             if(equal(predictions[i],predictions[j])):
                 votes[i]+=1
     return predictions[votes.index(max(votes))]
+
+def bootstrap_sample(original_dataset, m):
+    sub_dataset = []
+    for i in range(m):
+        sub_dataset.append(
+            original_dataset.iloc[random.randint(0,len(original_dataset)),:]
+        )
+    return sub_dataset
+
+def voting(lista):
+    return lista[0]
+
+def bagging( n, m, base_algorithm, train_dataset, target, test_dataset):
+
+    predictions = [[0 for x in range(len(target))] for y in range(n)]
+    for i in range(n):
+        sub_dataset = bootstrap_sample(train_dataset, m)
+        predictions[i] = base_algorithm.fit(train_dataset, target).predict(test_dataset)
+
+    final_predictions = vote(predictions) # for classification
+
+    return final_predictions
+
 # Bootstrap Aggregation Algorithm
-def bagging(data,n):
+'''def bagging(data,n):
     AlgLR=LogisticRegression(solver='lbfgs')
     AlgDTC=DecisionTreeClassifier()
     AlgKNC=KNeighborsClassifier()
@@ -173,48 +196,8 @@ def bagging(data,n):
         predictions.append(algorithms[indRand].fit(x_train, y_train.values.ravel()).predict(x_test))
     for i in range(len(predictions)):
         print(predictions[i])
-    print(vote(predictions))
-def ExecuteRandomForest(data):
-    print("Starting Random Forest...")
-    le = LabelEncoder()
-    data = data.progress_apply(le.fit_transform)
-    #data['OFFENSE_WEIGH'] = data.progress_apply(lambda row: row.OFFENSE_WEIGH / 100, axis=1)
-    x_columns = ['MONTH_REPORTED', 'WEEKDAY_REPORTED', 'HOUR_REPORTED', 'NEIGHBORHOOD_ID', 'OFFENSE_WEIGH', 'COUNT']
-    y_columns = ['SAFETY']
+    return(vote(predictions))'''
 
-    x_train, x_test = train_test_split(data[x_columns], test_size=0.3)
-    y_train, y_test = train_test_split(data[y_columns].values.ravel(), test_size=0.3)
-
-    from sklearn import model_selection
-    # random forest model creation
-    rfc = RandomForestClassifier()
-    rfc.fit(x_train, y_train)
-    # predictions
-    rfc_predict = rfc.predict(x_test)
-
-    from sklearn.model_selection import cross_val_score
-    from sklearn.metrics import classification_report, confusion_matrix
-    rfc_cv_score = cross_val_score(rfc,x_train,y_train, cv=5)
-    print("=== Confusion Matrix ===")
-    print(confusion_matrix(y_test, rfc_predict))
-    print('\n')
-    print("=== Classification Report ===")
-    print(classification_report(y_test, rfc_predict))
-    print('\n')
-    print("=== All AUC Scores ===")
-    print(rfc_cv_score)
-    print('\n')
-    print("=== Mean AUC Score ===")
-    print("Mean AUC Score - Random Forest: ", rfc_cv_score.mean())
-    accuracy_value = accuracy_score(y_test, rfc_predict)
-    print(accuracy_value)
-
-    print("__________________________________ CROSSSSSSSSSSS VALLLLLLLLLLLL ________________________________")
-    cross_val = cross_val_score(rfc,data[x_columns],data[y_columns].values.ravel(), cv=10)
-    print("{}".format(np.mean(cross_val)))
-    print("__________________________________ CROSSSSSSSSSSS VALLLLLLLLLLLL ________________________________")
-
-    TesteManual(y_test,rfc_predict)
 
 def treatData(data):
     print("Treating Data")
@@ -230,19 +213,19 @@ def treatData(data):
     print("Getting Weekday:")
     data['WEEKDAY_REPORTED']=pd.DatetimeIndex(data['REPORTED_DATE']).weekday
     print("COMPLETE Getting Weekday: ")
-    
+
     print("Getting Day:")
     data['DAY_REPORTED']=pd.DatetimeIndex(data['REPORTED_DATE']).day
     print("COMPLETE Getting Day: ")
-    
+
     print("Getting Month:")
     data['MONTH_REPORTED']=pd.DatetimeIndex(data['REPORTED_DATE']).month
     print("COMPLETE Getting Month: ")
-    
+
     print("Getting Year:")
     data['YEAR_REPORTED']=pd.DatetimeIndex(data['REPORTED_DATE']).year
     print("COMPLETE Getting YEAR: ")
-    
+
     print("Getting OFENSE_CODE_JUNCTION:")
     data['OFENSE_CODE_JUNCTION'] = data[['OFFENSE_CODE','OFFENSE_CODE_EXTENSION']].dot([100,1])
     print("COMPLETE OFENSE_CODE_JUNCTION: ")
@@ -250,7 +233,7 @@ def treatData(data):
     print("Saving File..")
     data.to_csv('db/crime-treated.csv',index=None)
     print("arquivos salvo")
-    
+
 def CratGraph(data):
     print("Creating graph...")
     #file = open("graphs.csv","w")
@@ -286,7 +269,7 @@ def main():
     fileExist=False
     if(os.path.exists('db/crime-treated.csv')):
         fileExist =True
-        filePath="db/crime-treated.csv"  
+        filePath="db/crime-treated.csv"
         names =["HOUR_REPORTED","DAY_REPORTED","WEEKDAY_REPORTED","MONTH_REPORTED","YEAR_REPORTED",
                 "OFFENSE_CATEGORY_ID","NEIGHBORHOOD_ID"]
         data=pd.read_csv(filePath, parse_dates=True,usecols=names,nrows = None)
@@ -339,7 +322,18 @@ def main():
     #ExecuteKNN(dataClenad)
     #ExecuteDecisionTree(dataClenad)
     #CratGraph(dataClenad)
-    bagging(dataClenad,5)
+    le = LabelEncoder()
+    dataClenad = dataClenad.progress_apply(le.fit_transform)
+    x_columns = ['MONTH_REPORTED', 'WEEKDAY_REPORTED', 'HOUR_REPORTED', 'NEIGHBORHOOD_ID', 'OFFENSE_WEIGH', 'COUNT']
+    y_columns = ['SAFETY']
+    x_train, x_test = train_test_split(dataClenad[x_columns], test_size=0.3)
+    y_train, y_test = train_test_split(dataClenad[y_columns].values.ravel(), test_size=0.3)
+    Dec = DecisionTreeClassifier()
+    predictions = bagging(5, len(y_test), Dec, x_train, np.ravel(y_train, order='C'), x_train)
+    print(predictions)
+    print(y_test)
+    accuracy_value = accuracy_score(y_test, predictions)
+    # ExecuteRandomForest(dataClenad)
     #ExecuteRandomForest(dataClenad)
 
 main()
