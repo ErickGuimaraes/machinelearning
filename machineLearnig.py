@@ -137,20 +137,27 @@ def ExecuteDecisionTree(data):
 
 # Bootstrap Aggregation Algorithm
 def bagging(data,n):
-    algorithms = [LogisticRegression, DecisionTreeClassifier, KNeighborsClassifier, MLPClassifier]  # for classification
+    AlgLR=LogisticRegression(solver='lbfgs')
+    AlgDTC=DecisionTreeClassifier()
+    AlgKNC=KNeighborsClassifier()
+    AlgMLPC=MLPClassifier()
+    le = LabelEncoder()
+    data = data.progress_apply(le.fit_transform)
+    
+    algorithms = [AlgLR, AlgDTC, AlgKNC, AlgMLPC]  # for classification
     x_columns = ['MONTH_REPORTED', 'WEEKDAY_REPORTED', 'HOUR_REPORTED', 'NEIGHBORHOOD_ID', 'OFFENSE_WEIGH', 'COUNT']
     y_columns = ['SAFETY']
     predictions = []
 
-    for i, algorithm in range(n):
+    for i in range(n):
         array = []
-        x_train, x_test = train_test_split(data[x_columns], test_size=0.3, random_state=random.randint)
-        y_train, y_test = train_test_split(data[y_columns].values.ravel(), test_size=0.3)
-        array.append(algorithms[random.randint(0,2)].fit(x_train, y_train.values.ravel()).predict(x_test))
+        x_train, x_test,y_train, y_test = train_test_split(data[x_columns],data[y_columns] ,test_size=0.3, random_state=random.randint(1,100))
+        indRand=random.randint(0,2)
+        array.append(algorithms[indRand].fit(x_train, y_train.values.ravel()).predict(x_test))
         array.append(i)
         predictions.append(array)
     for i in range(len(predictions)):
-
+        print(predictions[i])
 def ExecuteRandomForest(data):
     print("Starting Random Forest...")
     le = LabelEncoder()
@@ -288,8 +295,9 @@ def main():
 
     counts = dataClenad['SAFETY'].value_counts()
     print(counts)
-    ExecuteKNN(dataClenad)
-    ExecuteDecisionTree(dataClenad)
-    ExecuteRandomForest(dataClenad)
+    #ExecuteKNN(dataClenad)
+    #ExecuteDecisionTree(dataClenad)
+    bagging(dataClenad,5)
+    #ExecuteRandomForest(dataClenad)
 
 main()
