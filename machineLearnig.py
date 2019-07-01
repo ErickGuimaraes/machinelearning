@@ -65,7 +65,7 @@ def ExecuteKNN(data):
     print("Starting KNN...")
     le = LabelEncoder()
     data = data.progress_apply(le.fit_transform)
-    data['OFFENSE_WEIGH'] = data.progress_apply(lambda row: row.OFFENSE_WEIGH/100,axis=1 )
+    #data['OFFENSE_WEIGH'] = data.progress_apply(lambda row: row.OFFENSE_WEIGH/100,axis=1 )
 
     print(data)
     x_columns=['MONTH_REPORTED','WEEKDAY_REPORTED','HOUR_REPORTED','NEIGHBORHOOD_ID','OFFENSE_WEIGH','COUNT']
@@ -103,7 +103,7 @@ def ExecuteDecisionTree(data):
     print("Starting Decision Tree...")
     le = LabelEncoder()
     data = data.progress_apply(le.fit_transform)
-    data['OFFENSE_WEIGH'] = data.progress_apply(lambda row: row.OFFENSE_WEIGH / 100, axis=1)
+    #data['OFFENSE_WEIGH'] = data.progress_apply(lambda row: row.OFFENSE_WEIGH / 100, axis=1)
     x_columns = ['MONTH_REPORTED', 'WEEKDAY_REPORTED', 'HOUR_REPORTED', 'NEIGHBORHOOD_ID', 'OFFENSE_WEIGH', 'COUNT']
     y_columns = ['SAFETY']
 
@@ -139,7 +139,7 @@ def ExecuteRandomForest(data):
     print("Starting Random Forest...")
     le = LabelEncoder()
     data = data.progress_apply(le.fit_transform)
-    data['OFFENSE_WEIGH'] = data.progress_apply(lambda row: row.OFFENSE_WEIGH / 100, axis=1)
+    #data['OFFENSE_WEIGH'] = data.progress_apply(lambda row: row.OFFENSE_WEIGH / 100, axis=1)
     x_columns = ['MONTH_REPORTED', 'WEEKDAY_REPORTED', 'HOUR_REPORTED', 'NEIGHBORHOOD_ID', 'OFFENSE_WEIGH', 'COUNT']
     y_columns = ['SAFETY']
 
