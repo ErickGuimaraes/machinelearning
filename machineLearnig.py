@@ -101,7 +101,7 @@ def ExecuteKNN(data,cvTeste=10):
     TesteManual(y_test,predictions)
     return np.mean(cross_val)
 
-def ExecuteDecisionTree(data):
+def ExecuteDecisionTree(data,cvTeste=10):
     print("Starting Decision Tree...")
     le = LabelEncoder()
     data = data.progress_apply(le.fit_transform)
@@ -115,7 +115,7 @@ def ExecuteDecisionTree(data):
     model = DecisionTreeClassifier()
     model.fit(x_train, np.ravel(y_train,order='C'))
     predictions = model.predict(x_test)
-    rfc_cv_score = cross_val_score(model,x_train,y_train, cv=5)
+    rfc_cv_score = cross_val_score(model,x_train,y_train, cv=cvTeste)
     print("=== Confusion Matrix ===")
     print(confusion_matrix(y_test, predictions))
     print('\n')
@@ -151,7 +151,7 @@ def vote(predictions):
             print("compating:"+str(i)+" <--> "+str(j))
             if(equal(predictions[i],predictions[j])):
                 votes[i]+=1
-    return votes.index(max(votes))
+    return predictions[votes.index(max(votes))]
 # Bootstrap Aggregation Algorithm
 def bagging(data,n):
     AlgLR=LogisticRegression(solver='lbfgs')
