@@ -22,6 +22,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.neural_network import MLPClassifier
 from sklearn.linear_model import LogisticRegression
 
+
 def TesteManual(yTest,yPrediction):
     print(type(yTest))
     total = len(yTest)
@@ -171,16 +172,17 @@ def bootstrap_sample(original_dataset, m):
 def voting(lista):
     return lista[0]
 
-def bagging( n, m, base_algorithm, train_dataset, target, test_dataset):
+def bagging( n, m, train_dataset, target, test_dataset):
 
     predictions = [[0 for x in range(len(target))] for y in range(n)]
     y_test_vect = [[0 for x in range(len(target))] for y in range(n)]
     for i in range(n):
+        algos = [ KNeighborsClassifier(), LogisticRegression()]
         sub_dataset_x,sub_dataset_y = bootstrap_sample(train_dataset, m)
         x_train,x_test,y_train, y_test = train_test_split(sub_dataset_x,sub_dataset_y)
-        model = base_algorithm
+        model = algos[random.randint(0,1)]
 
-        model.fit(x_train,y_train)
+        model.fit(x_train,np.ravel(y_train,order='C'))
         y_test_vect[i]=y_test
         predictions[i] =model.predict(x_test)
         print(len(predictions[i]))
@@ -350,8 +352,8 @@ def main():
     y_columns = ['SAFETY']
     x_train, x_test = train_test_split(dataClenad[x_columns], test_size=0.3)
     y_train, y_test = train_test_split(dataClenad[y_columns].values.ravel(), test_size=0.3)
-    Dec = DecisionTreeClassifier()
-    predictions = bagging(5, 100, Dec, dataClenad, np.ravel(y_train, order='C'), x_train)
+
+    predictions = bagging(5, 100, dataClenad, np.ravel(y_train, order='C'), x_train)
     exit(0)
     # ExecuteRandomForest(dataClenad)
     #ExecuteRandomForest(dataClenad)
