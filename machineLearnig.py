@@ -220,7 +220,7 @@ def treatData(data):
     print("COMPLETE OFENSE_CODE_JUNCTION: ")
 
     print("Saving File..")
-    data.to_csv('db/crime-treated.csv',index=None)
+    data.to_csv('crime-treated.csv',index=None)
     print("arquivos salvo")
 
 def CratGraph(data):
@@ -257,12 +257,12 @@ def main():
     names = ["OFFENSE_TYPE_ID", "OFFENSE_CATEGORY_ID", "FIRST_OCCURRENCE_DATE",
             "REPORTED_DATE", "DISTRICT_ID", "PRECINCT_ID",
             "NEIGHBORHOOD_ID", "IS_CRIME", "IS_TRAFFIC"]
-    filePath="db/crime.csv"
+    filePath="crime.csv"
     pd.set_option('display.float_format', '{:.2f}'.format)
     fileExist=False
-    if(os.path.exists('db/crime-treated.csv')):
+    if(os.path.exists('crime-treated.csv')):
         fileExist =True
-        filePath="db/crime-treated.csv"
+        filePath="crime-treated.csv"
         names =["HOUR_REPORTED","DAY_REPORTED","WEEKDAY_REPORTED","MONTH_REPORTED","YEAR_REPORTED",
                 "OFFENSE_CATEGORY_ID","NEIGHBORHOOD_ID"]
         data=pd.read_csv(filePath, parse_dates=True,usecols=names,nrows = None)
