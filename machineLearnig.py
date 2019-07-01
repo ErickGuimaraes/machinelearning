@@ -168,10 +168,10 @@ def bagging( n, m, train_dataset, target, test_dataset):
     predictions = [[0 for x in range(len(target))] for y in range(n)]
     y_test_vect = [[0 for x in range(len(target))] for y in range(n)]
     for i in range(n):
-        algos = [KNeighborsClassifier()]
+        algos = [KNeighborsClassifier(), LogisticRegression()]
         sub_dataset_x,sub_dataset_y = bootstrap_sample(train_dataset, m)
         x_train,x_test,y_train, y_test = train_test_split(sub_dataset_x,sub_dataset_y)
-        model = algos[0]
+        model = algos[random.randint(0,1)]
 
         model.fit(x_train,np.ravel(y_train,order='C'))
         y_test_vect[i]=y_test
@@ -323,7 +323,7 @@ def main():
     x_train, x_test = train_test_split(dataClenad[x_columns], test_size=0.3)
     y_train, y_test = train_test_split(dataClenad[y_columns].values.ravel(), test_size=0.3)
 
-    bagging(5, 100, dataClenad, np.ravel(y_train, order='C'), x_train)
+    bagging(5, 200, dataClenad, np.ravel(y_train, order='C'), x_train)
     exit(0)
 
 
