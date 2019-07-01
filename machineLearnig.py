@@ -22,16 +22,19 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 
 def TesteManual(yTest,yPrediction):
+    print(type(yTest))
     total = len(yTest)
+    if (type(yTest) == type(yPrediction)):
+        y_test_mat=yTest
+    else:
+        y_test_mat=yTest.values.ravel()
+
     right =0
     wrong = 0
     zeroPred =0
     onePred =0
     zeroTest =0
     oneTest =0
-    y_test_mat=yTest.values.ravel()
-    print(y_test_mat)
-    print(yPrediction)
     for i in range(total):
         if(y_test_mat[i]==yPrediction[i]):
             right+=1
@@ -86,7 +89,7 @@ def ExecuteKNN(data):
 
 
     print("__________________________________ CROSSSSSSSSSSS VALLLLLLLLLLLL ________________________________")
-    cross_val = cross_val_score(model,x_train,y_train.values.ravel(), cv=5)
+    cross_val = cross_val_score(model,x_train,y_train.values.ravel(), cv=300)
     print("{}".format(np.mean(cross_val)))
 
     print("__________________________________ CROSSSSSSSSSSS VALLLLLLLLLLLL ________________________________")
@@ -94,11 +97,8 @@ def ExecuteKNN(data):
 
     accuracy_value = accuracy_score(y_test, predictions)
     print(accuracy_value)
-<<<<<<< HEAD
     TesteManual(y_test,predictions)
-=======
 
->>>>>>> 07f2f962b8967f2e6471cfd6a3e28b476daa2ed8
 def ExecuteDecisionTree(data):
     print("Starting Decision Tree...")
     le = LabelEncoder()
@@ -125,7 +125,11 @@ def ExecuteDecisionTree(data):
     print('\n')
     print("=== Mean AUC Score ===")
     print("Mean AUC Score - Random Forest: ", rfc_cv_score.mean())
+    accuracy_value = accuracy_score(y_test, predictions)
+    print(accuracy_value)
     TesteManual(y_test,predictions)
+
+
 def ExecuteRandomForest(data):
     print("Starting Random Forest...")
     le = LabelEncoder()
@@ -158,6 +162,8 @@ def ExecuteRandomForest(data):
     print('\n')
     print("=== Mean AUC Score ===")
     print("Mean AUC Score - Random Forest: ", rfc_cv_score.mean())
+    accuracy_value = accuracy_score(y_test, rfc_predict)
+    print(accuracy_value)
     TesteManual(y_test,rfc_predict)
 
 def treatData(data):
@@ -223,20 +229,20 @@ def main():
 
         treatData(data)
     crimesDict = {
-        'all-other-crimes': 3,
-        'larceny' : 4,
-        'theft-from-motor-vehicle' : 12,
-        'drug-alcohol' : 7,
-        'auto-theft' : 10,
-        'white-collar-crime': 2,
-        'burglary': 6,
-        'public-disorder' : 5,
-        'aggravated-assault': 13,
-        'other-crimes-against-persons' : 9,
-        'robbery' : 11,
-        'sexual-assault' : 14,
-        'murder': 15,
-        'arson': 8
+        'all-other-crimes': 1,
+        'larceny' : 1,
+        'theft-from-motor-vehicle' : 3,
+        'drug-alcohol' : 2,
+        'auto-theft' : 3,
+        'white-collar-crime': 1,
+        'burglary': 2,
+        'public-disorder' : 2,
+        'aggravated-assault': 3,
+        'other-crimes-against-persons' : 2,
+        'robbery' : 3,
+        'sexual-assault' : 3,
+        'murder': 3,
+        'arson': 2
     }
     tqdm.pandas()
     print("Calculating Offense Weigh...")
@@ -251,9 +257,10 @@ def main():
     modeQtd = dataClenad['COUNT'].mode().values
 
     print(modeCrime)
-    dataClenad['SAFETY'] = dataClenad.progress_apply(lambda row: 1 if row.OFFENSE_WEIGH <= modeCrime else 0, axis=1 )
+    dataClenad['SAFETY'] = dataClenad.progress_apply(lambda row: 1 if row.OFFENSE_WEIGH <= modeCrime and row.COUNT <= modeQtd else 0, axis=1 )
 
-
+    counts = dataClenad['SAFETY'].value_counts()
+    print(counts)
     ExecuteKNN(dataClenad)
     ExecuteDecisionTree(dataClenad)
     ExecuteRandomForest(dataClenad)
