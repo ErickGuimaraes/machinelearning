@@ -80,7 +80,7 @@ def ExecuteKNN(data):
     predictions = model.predict(x_test)
     print(len(predictions))
     print(len(y_test))
-    # Get the actual values for the test set.
+    # Get the actua__________________________________l values for the test set.
     actual = y_test
     # Compute the mean squared error of our predictions.
     print(confusion_matrix(y_test, predictions))  
@@ -89,7 +89,7 @@ def ExecuteKNN(data):
 
 
     print("__________________________________ CROSSSSSSSSSSS VALLLLLLLLLLLL ________________________________")
-    cross_val = cross_val_score(model,x_train,y_train.values.ravel(), cv=300)
+    cross_val = cross_val_score(model,data[x_columns],data[y_columns].values.ravel(), cv=10)
     print("{}".format(np.mean(cross_val)))
 
     print("__________________________________ CROSSSSSSSSSSS VALLLLLLLLLLLL ________________________________")
@@ -127,6 +127,11 @@ def ExecuteDecisionTree(data):
     print("Mean AUC Score - Random Forest: ", rfc_cv_score.mean())
     accuracy_value = accuracy_score(y_test, predictions)
     print(accuracy_value)
+    print("__________________________________ CROSSSSSSSSSSS VALLLLLLLLLLLL ________________________________")
+    cross_val = cross_val_score(model,data[x_columns],data[y_columns].values.ravel(), cv=10)
+    print("{}".format(np.mean(cross_val)))
+    print("__________________________________ CROSSSSSSSSSSS VALLLLLLLLLLLL ________________________________")
+
     TesteManual(y_test,predictions)
 
 
@@ -164,6 +169,12 @@ def ExecuteRandomForest(data):
     print("Mean AUC Score - Random Forest: ", rfc_cv_score.mean())
     accuracy_value = accuracy_score(y_test, rfc_predict)
     print(accuracy_value)
+
+    print("__________________________________ CROSSSSSSSSSSS VALLLLLLLLLLLL ________________________________")
+    cross_val = cross_val_score(rfc,data[x_columns],data[y_columns].values.ravel(), cv=10)
+    print("{}".format(np.mean(cross_val)))
+    print("__________________________________ CROSSSSSSSSSSS VALLLLLLLLLLLL ________________________________")
+
     TesteManual(y_test,rfc_predict)
 
 def treatData(data):
