@@ -21,6 +21,7 @@ from sklearn.metrics import accuracy_score
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.neural_network import MLPClassifier
 from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import recall_score
 
 
 def TesteManual(yTest,yPrediction):
@@ -75,8 +76,6 @@ def ExecuteKNN(data,cvTeste=10):
 
     x_train, x_test = train_test_split(data[x_columns], test_size=0.3)
     y_train, y_test = train_test_split(data[y_columns], test_size=0.3)
-    #print(data[x_columns])
-
     model = KNeighborsClassifier(n_neighbors=4)
     model.fit(x_train, y_train.values.ravel())
     predictions = model.predict(x_test)
@@ -90,16 +89,16 @@ def ExecuteKNN(data,cvTeste=10):
 
 
 
-    print("__________________________________ CROSSSSSSSSSSS VALLLLLLLLLLLL ________________________________")
+    print("=================================RESULTS==================================")
     cross_val = cross_val_score(model,data[x_columns],data[y_columns].values.ravel(), cv=cvTeste)
-    print("{}".format(np.mean(cross_val)))
-
-    print("__________________________________ CROSSSSSSSSSSS VALLLLLLLLLLLL ________________________________")
-
-
+    print("CROSS VAL -->{}".format(np.mean(cross_val)))
     accuracy_value = accuracy_score(y_test, predictions)
-    print(accuracy_value)
-    TesteManual(y_test,predictions)
+    print("Accuracy -->", accuracy_value)
+    print("Precision -->", precision_score(y_test, predictions))
+    print("F1 -->", f1_score(y_test, predictions))
+    print("Recall -->", recall_score(y_test, predictions))
+    print("==============================================================================""\n""\n""\n\"")
+
     return np.mean(cross_val)
 
 def ExecuteDecisionTree(data,cvTeste=10):
@@ -114,29 +113,22 @@ def ExecuteDecisionTree(data,cvTeste=10):
     y_train, y_test = train_test_split(data[y_columns].values.ravel(), test_size=0.3)
 
     model = DecisionTreeClassifier()
-    print(np.ravel(y_train,order='C'))
     model.fit(x_train, np.ravel(y_train,order='C'))
     predictions = model.predict(x_test)
     rfc_cv_score = cross_val_score(model,x_train,y_train, cv=cvTeste)
-    #print("=== Confusion Matrix ===")
-    #print(confusion_matrix(y_test, predictions))
-    #print('\n')
-    #print("=== Classification Report ===")
-    #print(classification_report(y_test, predictions))
-    #print('\n')
-    #print("=== All AUC Scores ===")
-    #print(rfc_cv_score)
-    #print('\n')
-    #print("=== Mean AUC Score ===")
-    #print("Mean AUC Score - Random Forest: ", rfc_cv_score.mean())
     accuracy_value = accuracy_score(y_test, predictions)
-    #print(accuracy_value)
-    print("__________________________________ CROSSSSSSSSSSS VALLLLLLLLLLLL ________________________________")
     cross_val = cross_val_score(model,data[x_columns],data[y_columns].values.ravel(), cv=10)
-    print("{}".format(np.mean(cross_val)))
-    print("__________________________________ CROSSSSSSSSSSS VALLLLLLLLLLLL ________________________________")
-    #TesteManual(y_test,predictions)
+    print("=================================RESULTS==================================")
+    cross_val = cross_val_score(model, data[x_columns], data[y_columns].values.ravel(), cv=cvTeste)
+    print("CROSS VAL -->{}".format(np.mean(cross_val)))
+    accuracy_value = accuracy_score(y_test, predictions)
+    print("Accuracy -->", accuracy_value)
+    print("Precision -->", precision_score(y_test, predictions))
+    print("F1 -->", f1_score(y_test, predictions))
+    print("Recall -->", recall_score(y_test, predictions))
+    print("==============================================================================""\n""\n""\n\"")
     return np.mean(cross_val)
+
 def equal(pre1,pre2):
     if(len(pre1)!=len(pre2)):
         return False
@@ -144,6 +136,7 @@ def equal(pre1,pre2):
         if(pre1[i]!=pre2[i]):
             return False
     return True
+
 def vote(predictions):
     votes=[0]*len(predictions)
     for i in range(len(predictions)):
@@ -169,54 +162,30 @@ def bootstrap_sample(original_dataset, m):
         )
     return sub_dataset_x,sub_dataset_y
 
-def voting(lista):
-    return lista[0]
 
 def bagging( n, m, train_dataset, target, test_dataset):
-
+    print("Starting BAGGING...")
     predictions = [[0 for x in range(len(target))] for y in range(n)]
     y_test_vect = [[0 for x in range(len(target))] for y in range(n)]
     for i in range(n):
-        algos = [ KNeighborsClassifier(), LogisticRegression()]
+        algos = [KNeighborsClassifier()]
         sub_dataset_x,sub_dataset_y = bootstrap_sample(train_dataset, m)
         x_train,x_test,y_train, y_test = train_test_split(sub_dataset_x,sub_dataset_y)
-        model = algos[random.randint(0,1)]
+        model = algos[0]
 
         model.fit(x_train,np.ravel(y_train,order='C'))
         y_test_vect[i]=y_test
         predictions[i] =model.predict(x_test)
-        print(len(predictions[i]))
-        accuracy_value = accuracy_score(y_test, predictions[i])
-        print(accuracy_value)
-    print(len(predictions))
+
     final_predictions,ind = vote(predictions) # for classification
     accuracy_value = accuracy_score(y_test_vect[ind], final_predictions)
+    print("=================================RESULTS==================================")
     print("accuracy_value Final -->",accuracy_value)
-    
+    print("F1 -->" ,f1_score(y_test_vect[ind], final_predictions))
+    print("Precision -->" ,precision_score(y_test_vect[ind], final_predictions))
+    print("Recall -->", recall_score(y_test_vect[ind], final_predictions))
+    print("==============================================================================""\n""\n""\n\"")
     return final_predictions
-
-# Bootstrap Aggregation Algorithm
-'''def bagging(data,n):
-    AlgLR=LogisticRegression(solver='lbfgs')
-    AlgDTC=DecisionTreeClassifier()
-    AlgKNC=KNeighborsClassifier()
-    AlgMLPC=MLPClassifier()
-    le = LabelEncoder()
-    data = data.progress_apply(le.fit_transform)
-    
-    algorithms = [AlgLR, AlgDTC, AlgKNC, AlgMLPC]  # for classification
-    x_columns = ['MONTH_REPORTED', 'WEEKDAY_REPORTED', 'HOUR_REPORTED', 'NEIGHBORHOOD_ID', 'OFFENSE_WEIGH', 'COUNT']
-    y_columns = ['SAFETY']
-    predictions = []
-    temp=[]
-    for i in range(n):
-        x_train, x_test,y_train, y_test = train_test_split(data[x_columns],data[y_columns] ,test_size=0.3, random_state=random.randint(1,100))
-        indRand=random.randint(0,2)
-        temp =algorithms[indRand].fit(x_train, y_train.values.ravel()).predict(x_test)
-        predictions.append(algorithms[indRand].fit(x_train, y_train.values.ravel()).predict(x_test))
-    for i in range(len(predictions)):
-        print(predictions[i])
-    return(vote(predictions))'''
 
 
 def treatData(data):
@@ -338,14 +307,15 @@ def main():
     modeCrime = dataClenad['OFFENSE_WEIGH'].mode().values
     modeQtd = dataClenad['COUNT'].mode().values
 
-    print(modeCrime)
+    print("CRIME MODE: ",modeCrime)
     dataClenad['SAFETY'] = dataClenad.progress_apply(lambda row: 1 if row.OFFENSE_WEIGH <= modeCrime and row.COUNT <= modeQtd else 0, axis=1 )
 
     counts = dataClenad['SAFETY'].value_counts()
-    print(counts)
-    #ExecuteKNN(dataClenad)
-    #ExecuteDecisionTree(dataClenad)
-    #CratGraph(dataClenad)
+
+    # CratGraph(dataClenad)
+    ExecuteKNN(dataClenad)
+    ExecuteDecisionTree(dataClenad)
+
     le = LabelEncoder()
     dataClenad = dataClenad.progress_apply(le.fit_transform)
     x_columns = ['MONTH_REPORTED', 'WEEKDAY_REPORTED', 'HOUR_REPORTED', 'NEIGHBORHOOD_ID', 'OFFENSE_WEIGH', 'COUNT']
@@ -353,9 +323,8 @@ def main():
     x_train, x_test = train_test_split(dataClenad[x_columns], test_size=0.3)
     y_train, y_test = train_test_split(dataClenad[y_columns].values.ravel(), test_size=0.3)
 
-    predictions = bagging(5, 100, dataClenad, np.ravel(y_train, order='C'), x_train)
+    bagging(5, 100, dataClenad, np.ravel(y_train, order='C'), x_train)
     exit(0)
-    # ExecuteRandomForest(dataClenad)
-    #ExecuteRandomForest(dataClenad)
+
 
 main()
