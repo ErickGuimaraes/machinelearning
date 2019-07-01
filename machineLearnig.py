@@ -19,7 +19,8 @@ from sklearn.metrics import precision_score, f1_score
 from sklearn.model_selection import cross_val_score
 from sklearn.metrics import accuracy_score
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.neural_network import MLPClassifier
+from sklearn.linear_model import LogisticRegression
 
 def TesteManual(yTest,yPrediction):
     print(type(yTest))
@@ -134,6 +135,21 @@ def ExecuteDecisionTree(data):
 
     TesteManual(y_test,predictions)
 
+# Bootstrap Aggregation Algorithm
+def bagging(data,n):
+    algorithms = [LogisticRegression, DecisionTreeClassifier, KNeighborsClassifier, MLPClassifier]  # for classification
+    x_columns = ['MONTH_REPORTED', 'WEEKDAY_REPORTED', 'HOUR_REPORTED', 'NEIGHBORHOOD_ID', 'OFFENSE_WEIGH', 'COUNT']
+    y_columns = ['SAFETY']
+    predictions = []
+
+    for i, algorithm in range(n):
+        array = []
+        x_train, x_test = train_test_split(data[x_columns], test_size=0.3, random_state=random.randint)
+        y_train, y_test = train_test_split(data[y_columns].values.ravel(), test_size=0.3)
+        array.append(algorithms[random.randint(0,2)].fit(x_train, y_train.values.ravel()).predict(x_test))
+        array.append(i)
+        predictions.append(array)
+    for i in range(len(predictions)):
 
 def ExecuteRandomForest(data):
     print("Starting Random Forest...")
